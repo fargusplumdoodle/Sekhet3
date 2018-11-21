@@ -1,7 +1,7 @@
 import random
 import time
 from Printer import VerbosityPrinter as vp
-from GetLog import GetLog
+import GetLog
 import socket
 import json
 import threading
@@ -26,9 +26,7 @@ class Client(threading.Thread):
         self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
 
         self.logs = self.getLogs(self.log_queries)
-        print(self.logs)
-        print(len(self.logs))
-
+        self.vp.print('Logs: %s' % len(self.logs))
 
     def getLogs(self, log_queries):
         '''
@@ -37,7 +35,10 @@ class Client(threading.Thread):
         '''
         logs = []
         for query in log_queries:
-            logs += GetLog(query)
+            logs += GetLog.GetLog(query)
+
+        # For temperature
+        logs.append(GetLog.GetTemp())
 
         return logs
 
@@ -46,11 +47,11 @@ class Client(threading.Thread):
             self.c.connect( ('localhost', self.port) )
 
             data = self.c.recv(self.pl)
+            if data != b'READY':
+                raise ValueError('Invalid response from server, expecting READY')
             self.vp.print('Start')
 
-
             # #### BEGIN PROTOCOL #####1
-
 
             logs = json.dumps(self.logs)
             self.c.send(logs.encode('utf-8'))

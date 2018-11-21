@@ -1,5 +1,6 @@
 #!/usr/bin/python3.6
 from Printer import VerbosityPrinter as vp
+import GetLog
 import Client
 
 class Manager(object):

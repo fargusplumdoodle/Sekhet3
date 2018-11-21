@@ -1,5 +1,6 @@
 #!/usr/bin/python3.6
 
+import datetime
 import os
 import re
 
@@ -43,10 +44,30 @@ def GetLog(search, lines=200):
             'date': date,
             'src': src
         })
-
-
     return data
 
 
+def GetTemp():
+    #
+    logs = os.popen('sensors -u | grep \'temp[0-9]_input\'').read()
 
+    logs = logs.split('\n')
 
+    temps = []
+    # Finding temperature from sensors output
+    for x in logs:
+        if x != '':
+            y = re.search(r'\d{1,3}\.\d+$', x)
+            temps.append(float(y.group(0)))
+
+    # Getting average temperature from CPU sources
+    temp = sum(temps) / float(len(temps))
+
+    time = datetime.datetime.now().strftime('%Y %b %d: %H:%M:%S')
+
+    data = {
+        'type': 'Temp',
+        'date': time,
+        'temp': str(temp)
+            }
+    return data

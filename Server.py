@@ -73,15 +73,11 @@ class ClientHandler(threading.Thread):
         self.vp.print('Finished with client')
         timeout = 100
         count = 0
-        while count < timeout:
+        while count < timeout and not self.done:
             # Sleeping 2 seconds
             self.vp.print('WAITING')
             time.sleep(2)
             count += 1
-
-    def stop(self):
-        self.vp.print('exiting')
-        exit(0)
 
 
     def get_data(self, client_soc, timeout=10):
