@@ -1,13 +1,14 @@
 import random
 import time
 from Printer import VerbosityPrinter as vp
+from GetLog import GetLog
 import socket
 import threading
 
 
 class Client(threading.Thread):
 
-    def __init__(self, port, name=0, verbose=4):
+    def __init__(self, port=9898, name=0, verbose=4):
 
         super(Client, self).__init__()
 
@@ -16,8 +17,26 @@ class Client(threading.Thread):
         self.vp = vp(self.verbose, name=self.name)
 
         self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.port = port
         self.pl = 1024
+
+        self.port = port
+
+        # TODO: use config file for this
+        self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
+
+        self.logs = self.getLogs(self.log_queries)
+
+
+    def getLogs(self, log_queries):
+        '''
+        Gets all logs associated with the specified parameter
+        :log_queries: ['str', 'str']
+        '''
+        logs = []
+        for query in log_queries:
+            logs += GetLog(query)
+
+        return logs
 
     def run(self):
         try:
