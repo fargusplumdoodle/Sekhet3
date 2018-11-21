@@ -1,4 +1,4 @@
-#!/usr/bin/python4.6
+#!/usr/bin/python3.6
 import threading
 import Client
 import Server
@@ -18,6 +18,9 @@ class Manager(object):
         self.clients = set()
         self.servers = []
 
+        self.server_no = 0
+
+        self.num_clients = 4
 
         # Creating Client and Server Thread Objects
         while True:
@@ -28,7 +31,7 @@ class Manager(object):
                 self.vp.print('Initialization failed, attempting next port: %s' % self.port)
                 self.port += 1
 
-        self.createClients(10)
+        self.createClients(self.num_clients)
 
         # Initiating Server
         self.vp.print('Starting Server')
@@ -55,7 +58,8 @@ class Manager(object):
             if len(self.s.active_clients) < self.s.max_active_clients:
                 # we have room to add another
                 client = self.s.q.popleft()
-                ch = Server.ClientHandler(client)
+                ch = Server.ClientHandler(client, name=self.server_no)
+                self.server_no += 1
                 self.s.active_clients.add(ch)
                 ch.start()
 
@@ -66,5 +70,6 @@ class Manager(object):
 
             for dead_client in kick:
                 self.s.active_clients.remove(dead_client)
+
 if __name__ == '__main__':
     m = Manager()

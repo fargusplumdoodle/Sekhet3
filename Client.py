@@ -22,7 +22,6 @@ class Client(threading.Thread):
     def run(self):
         try:
             self.c.connect( ('localhost', self.port) )
-            #self.vp.print('Waiting for connection', 4)
 
             data = self.c.recv(self.pl)
             self.vp.print('Start')
