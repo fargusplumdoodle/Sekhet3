@@ -4,23 +4,15 @@ import Client
 import Server
 import time
 from Printer import VerbosityPrinter as vp
-from collections import deque
-import socket
 
 class Manager(object):
-
     def __init__(self):
 
-        self.port = 12345
-        self.verbosity = 2
+        self.port = 9899
+        self.verbosity = 4
         self.name = 'Manager'
         self.vp = vp(self.verbosity, name=self.name)
-        self.clients = set()
         self.servers = []
-
-        self.server_no = 0
-
-        self.num_clients = 4
 
         # Creating Client and Server Thread Objects
         while True:
@@ -31,45 +23,49 @@ class Manager(object):
                 self.vp.print('Initialization failed, attempting next port: %s' % self.port)
                 self.port += 1
 
-        self.createClients(self.num_clients)
-
         # Initiating Server
         self.vp.print('Starting Server')
         self.s.start()
-        self.vp.print('Starting Clients')
-        self.startClients()
 
+        self.logs = []
+
+        self.num_clients = 0
         self.monitor()
-
-    def createClients(self, numClients):
-        for x in range(numClients):
-            self.clients.add(Client.Client(name=x, port=self.port))
-
-    def startClients(self):
-        for client in self.clients:
-            client.start()
 
     def monitor(self):
         while True:
+            # ## BEGIN CLIENT HANDLING ####
             if len(self.s.q) == 0:
                 time.sleep(2)
-                continue
-
-            if len(self.s.active_clients) < self.s.max_active_clients:
-                # we have room to add another
-                client = self.s.q.popleft()
-                ch = Server.ClientHandler(client, name=self.server_no)
-                self.server_no += 1
-                self.s.active_clients.add(ch)
-                ch.start()
+            else:
+                if len(self.s.active_clients) < self.s.max_active_clients:
+                    # we have room to add another
+                    client = self.s.q.popleft()
+                    ch = Server.ClientHandler(client, name=self.num_clients)
+                    self.s.active_clients.add(ch)
+                    self.num_clients += 1
+                    ch.start()
 
             kick = []
             for client in self.s.active_clients:
                 if not client.isAlive():
                     kick.append(client)
 
+                if client.waiting:
+                    self.logs += client.logs
+                    self.vp.print('Got logs, Number of logs: %s' % len(self.logs))
+                    client.stop()
+                    kick.append(client)
+
             for dead_client in kick:
                 self.s.active_clients.remove(dead_client)
 
+            # ## END CLIENT HANDLING ####
+
+
+
+
+
 if __name__ == '__main__':
     m = Manager()
+

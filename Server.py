@@ -1,5 +1,6 @@
 import time
 from collections import deque
+import json
 import NetworkingTools as nt
 import socket
 import threading
@@ -27,16 +28,17 @@ class ServerListener(threading.Thread):
         self.active_clients = set()
         self.max_active_clients = 3
 
-        self.vp.print('Initiating Server')
 
     def run(self):
         # Accepting request
+        self.vp.print('Initiating Server on port %s' % self.port)
         try:
             while True:
                 client_soc, client_addr = self.s.accept()
                 self.q.append(client_soc)
+                self.vp.print('Got Client')
         except Exception as e:
-            self.vp.pritn('Error: %s' % str(e))
+            self.vp.print('Error: %s' % str(e))
             self.s.close()
             exit(2)
 
@@ -49,14 +51,51 @@ class ClientHandler(threading.Thread):
         self.name = 'Server-' + str(name)
         self.verbose = 4
         self.vp = vp(name=self.name, v=self.verbose)
+        self.done = False
+        self.waiting = False
+        self.logs = None
 
     def run(self):
         self.client_soc.send(b'READY')
-        response = self.client_soc.recv(self.pl)
-        if response != b'DONE':
-            self.client_soc.close()
-            self.vp.print('Error')
 
+        # #### BEGIN PROTOCOL #####1
+
+        logs = self.get_data(self.client_soc).decode('utf-8')
+
+        # #### END PROTOCOL #####1##
+
+        self.logs = json.loads(logs)
+
+        # PROTOCOL COMPLETE, data has been recieved.
+        # Going dormant until our data has been collected by the manager
+
+        self.waiting = True
+        self.vp.print('Finished with client')
+        timeout = 100
+        count = 0
+        while count < timeout:
+            # Sleeping 2 seconds
+            self.vp.print('WAITING')
+            time.sleep(2)
+            count += 1
+
+    def stop(self):
+        self.vp.print('exiting')
+        exit(0)
+
+
+    def get_data(self, client_soc, timeout=10):
+        data = []
+        for x in range(timeout):
+            chunk = client_soc.recv(self.pl)
+            if chunk == b'':
+                return b''.join(data)
+            elif chunk[-4:] == b'DONE':
+                data.append(chunk[:-4])
+                return b''.join(data)
+            else:
+                data.append(chunk)
+        raise ConnectionError('Error: No data recieved in %s tries' % timeout)
 
 
 

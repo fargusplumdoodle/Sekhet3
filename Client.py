@@ -3,12 +3,13 @@ import time
 from Printer import VerbosityPrinter as vp
 from GetLog import GetLog
 import socket
+import json
 import threading
 
 
 class Client(threading.Thread):
 
-    def __init__(self, port=9898, name=0, verbose=4):
+    def __init__(self, port=9899, name=0, verbose=4):
 
         super(Client, self).__init__()
 
@@ -25,6 +26,8 @@ class Client(threading.Thread):
         self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
 
         self.logs = self.getLogs(self.log_queries)
+        print(self.logs)
+        print(len(self.logs))
 
 
     def getLogs(self, log_queries):
@@ -44,14 +47,20 @@ class Client(threading.Thread):
 
             data = self.c.recv(self.pl)
             self.vp.print('Start')
-            # connection established
-            # waiting for a random amount of time
-            prob = random.choice(range(10))
-            time.sleep(prob)
+
+
+            # #### BEGIN PROTOCOL #####1
+
+
+            logs = json.dumps(self.logs)
+            self.c.send(logs.encode('utf-8'))
+
+            # #### END PROTOCOL #####1##
+
             self.c.send(b'DONE')
             self.vp.print('Finished')
         except Exception as e:
-            self.vp.pritn('Error: %s' % str(e))
+            self.vp.print('Error: %s' % str(e))
             self.c.close()
             exit(2)
 
