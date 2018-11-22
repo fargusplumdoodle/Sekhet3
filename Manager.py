@@ -86,7 +86,7 @@ class Manager(object):
                 newData[log['type']].append(log)
 
 
-            #
+            # TODO: Make so program also can accept old information
             #
             # THIS IS FOR INCLUDING OLD DATA IN OUTPUT, FOR NOW WE ARE JUST GOING TO SKIP IT AND ONLY INCLUDE THE
             # NEWEST DATA PROVIDED BY THE MOST RECENT INFORMATION # # # getting old information # oldData = '' # with open(self.target_output_file) as fl: #     oldData += fl.read() #

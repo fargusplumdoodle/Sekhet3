@@ -3,6 +3,7 @@ import time
 from Printer import VerbosityPrinter as vp
 import GetLog
 import socket
+import pdb
 import json
 import threading
 
@@ -26,7 +27,12 @@ class Client(threading.Thread):
         self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
 
         self.logs = self.getLogs(self.log_queries)
+        self.analyzeLogs()
         self.vp.print('Logs: %s' % len(self.logs))
+
+    def analyzeLogs(self):
+        for log in self.logs:
+            print(log)
 
     def getLogs(self, log_queries):
         '''
