@@ -44,6 +44,6 @@ tr:nth-child(even) {
     background-color: darkgreen;
 
 }
-h1 {
+h1, h4{
     color: white;
 }

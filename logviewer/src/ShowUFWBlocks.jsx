@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Collapse from './Collapse.js';
+import { Collapse } from 'react-collapse';
 import './App.css';
 
 class ShowUFWBlocks extends Component {
@@ -25,7 +25,7 @@ class ShowUFWBlocks extends Component {
         if (this.state.showSrc) {
             return (
                 <div>
-                    <ShowInfo isOpened={this.state.showSrc}/>
+                    <ShowInfo isOpened={this.state.showSrc} display={this.state.display} info={this.props[this.state.display]}/>
                     <table>
                         <th>Time</th>
                         <th>Source</th>
@@ -62,18 +62,23 @@ class ShowInfo extends React.PureComponent {
         super(props);
     }
     render () {
-
+        console.log(this.props.info)
         return (
             <div>
                 <Collapse isOpened={this.props.isOpened} hasNestedCollapse={true}>
-                    <p>this is info</p>
+                    <h1>{this.props.display}</h1>
+                    <h4>Frequency: {this.props.info.freq}</h4>
+                    <table id='log'>
+                        {this.props.info.times.map(time =>
+                        <tr>{time}</tr>
+                        )}
+                    </table>
                 </Collapse>
+                <br/>
             </div>
         );
     }
 }
-
-
 export default ShowUFWBlocks;
 /*
 
