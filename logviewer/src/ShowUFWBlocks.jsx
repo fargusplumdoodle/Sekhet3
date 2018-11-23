@@ -45,8 +45,8 @@ class ShowUFWBlocks extends Component {
             return (
                 <div>
                     <table>
-                        <th>Time</th>
                         <th>Source</th>
+                        <th>Number of Blocks</th>
                         {Object.keys(this.props).map(src =>
                             <tr id={src} onClick={this.showInfo}>
                                 <td>{src}</td>
