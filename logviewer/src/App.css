@@ -22,6 +22,19 @@
   color: #61dafb;
 }
 
+.UserInput {
+  width: 100%;
+  background-color: white;
+  color: black;
+}
+.UserInput h3 {
+    padding-top: 10px;
+    padding-left: 10px;
+}
+.UserInput form {
+  padding: 15px;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
