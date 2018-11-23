@@ -1,37 +1,28 @@
 import React, { Component } from 'react';
 import './App.css';
+import ShowUFWBlocks from './ShowUFWBlocks';
+import ShowTemp from './ShowTemp'
 
 class ShowLogs extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: {}
+    	    show: false,
+            showLogs: false,
         }
     }
-    handleHTTPErrors(response) {
-        if (!response.ok) throw Error(response.status + ': ' + response.statusText);
-        return response;
-    }
-    componentDidMount() {
-        fetch('http://localhost:3004/logs')
-            .then(response=> this.handleHTTPErrors(response))
-            .then(response=> response.json())
-            .then(result=> {
-                this.setState({
-                    data: result
-                });
-            })
-            .catch(error=> {
-                console.log('Fetch API Error: ' + error);
-            });
-    }
     render () {
-        console.log(this.state.data);
-        return (<div>
-            <h1>Complete</h1>
-            {this.state.data.map(category =>
-                <p>{category}</p>
-            )}</div>);
+	    if (this.state.show) {
+        	return (
+			<div>
+                <ShowTemp { ... this.state.data}/>
+                <ShowUFWBlocks { ... this.state.data}/>
+			</div>);
+	    } else {
+		    return( 
+            <h1>Did not get data</h1>
+		    );
+	    }
     }
 }
 
