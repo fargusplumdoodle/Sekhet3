@@ -26,6 +26,9 @@ class ShowUFWBlocks extends Component {
             return (
                 <div>
                     <ShowInfo isOpened={this.state.showSrc} display={this.state.display} info={this.props[this.state.display]}/>
+                    <h4 onClick={() =>
+                        this.setState({showSrc: false})
+                    }>Close</h4>
                     <table>
                         <th>Time</th>
                         <th>Source</th>
@@ -60,15 +63,18 @@ class ShowUFWBlocks extends Component {
 class ShowInfo extends React.PureComponent {
     constructor(props) {
         super(props);
+        this.state = {
+            isOpened: this.props.isOpened
+        }
     }
     render () {
-        console.log(this.props.info)
         return (
             <div>
-                <Collapse isOpened={this.props.isOpened} hasNestedCollapse={true}>
+                <Collapse isOpened={this.state.isOpened} hasNestedCollapse={true}>
                     <h1>{this.props.display}</h1>
                     <h4>Frequency: {this.props.info.freq}</h4>
-                    <table id='log'>
+                    <table class='log'>
+                        <th>Occurrences</th>
                         {this.props.info.times.map(time =>
                         <tr>{time}</tr>
                         )}
