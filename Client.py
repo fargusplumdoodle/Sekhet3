@@ -58,9 +58,14 @@ class Client(threading.Thread):
             # my laptop but most likely is just some program thats bugging out
             self.ufw[log['src']]['freq'] += 1
             self.ufw[log['src']]['times'].append(log['date'])
+            self.ufw[log['src']]['port'] = log['port']
 
             self.sysInfo['totalblocks'] += 1
 
+        for src in self.ufw:
+            self.ufw[src]['traceroute'] = GetLog.traceroute(src)
+
+        import pdb; pdb.set_trace()
 
 
     def getLogs(self, log_queries):

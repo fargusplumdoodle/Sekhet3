@@ -26,7 +26,7 @@ def GetLog(search, lines=1000):
     for x in incidents:
         date = re.search(r'^\w+ \d+ \d\d:\d\d:\d\d', x)
         src = re.search(r'SRC=(\d|:|\.|\w)+', x)
-
+        port = re.search(r'DPT=(\d)+', x)
 
         try:
             date = date.group(0)
@@ -39,13 +39,24 @@ def GetLog(search, lines=1000):
             # if there is no src it was not a ufw block rule
             continue
 
+        try:
+            port = port.group(0)[4:]
+        except AttributeError:
+            port = 'Failed to find port'
+
+        #traceroute = 'example traceroute output'# os.popen('traceroute %s' % src).read()
+
         data.append({
             'type': search_term,
             'date': date,
-            'src': src
+            'src': src,
+            'port': port,
         })
     return data
 
+def traceroute(src):
+    print('Running traceroute for %s' % src)
+    return os.popen('traceroute %s -m 5' % src).read()
 def GetTemp():
     #
     logs = os.popen('sensors -u | grep \'temp[0-9]_input\'').read()
