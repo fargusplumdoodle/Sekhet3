@@ -65,7 +65,6 @@ class Client(threading.Thread):
         for src in self.ufw:
             self.ufw[src]['traceroute'] = GetLog.traceroute(src)
 
-        import pdb; pdb.set_trace()
 
 
     def getLogs(self, log_queries):
