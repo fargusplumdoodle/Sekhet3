@@ -68,17 +68,25 @@ class ShowInfo extends React.PureComponent {
         }
     }
     render () {
+        console.log(this.props.info);
         return (
-            <div>
+            <div class="showinfo">
                 <Collapse isOpened={this.state.isOpened} hasNestedCollapse={true}>
                     <h1>{this.props.display}</h1>
                     <h4>Frequency: {this.props.info.freq}</h4>
                     <table class='log'>
-                        <th>Occurrences</th>
+                        <th>Time</th>
+                        <th>Port</th>
                         {this.props.info.times.map(time =>
-                        <tr>{time}</tr>
+                            <tr>
+                                <td>{time}</td>
+                                <td>{this.props.info.port}</td>
+                            </tr>
                         )}
                     </table>
+                    <div class="traceroute">
+                        <p>{this.props.info.traceroute}</p>
+                    </div>
                 </Collapse>
                 <br/>
             </div>
