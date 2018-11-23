@@ -125,7 +125,7 @@ def print_footer(str):
 
 def print_json(json):
     """Hopefully prints all of json data, has not been tested very well and probbably wont work"""
-    import sekhnet
+    #import sekhnet
     #s.check_dic(json)
 
     def print_each_item(input, indent=0):
@@ -143,7 +143,7 @@ def print_json(json):
             # This is not an iterable, hopefully....
            print(' ' * indent + str(input) + '\n')
 
-    print_each_item(jon)
+    print_each_item(json)
 
 
 def print_header(str):

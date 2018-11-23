@@ -5,7 +5,7 @@ import os
 import re
 
 
-def GetLog(search, lines=200):
+def GetLog(search, lines=1000):
     #
     logs = os.popen('sudo journalctl -n --lines=%s' % lines).read()
 
@@ -46,7 +46,6 @@ def GetLog(search, lines=200):
         })
     return data
 
-
 def GetTemp():
     #
     logs = os.popen('sensors -u | grep \'temp[0-9]_input\'').read()
@@ -61,13 +60,10 @@ def GetTemp():
             temps.append(float(y.group(0)))
 
     # Getting average temperature from CPU sources
-    temp = sum(temps) / float(len(temps))
+    return str(sum(temps) / float(len(temps)))
 
-    time = datetime.datetime.now().strftime('%Y %b %d: %H:%M:%S')
+def GetBattery():
+    return os.popen('upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep percentage | rev | cut -d\' \' -f1 | rev').read()[:-1]
 
-    data = {
-        'type': 'Temp',
-        'date': time,
-        'temp': str(temp)
-            }
-    return data
+def GetHostname():
+    return os.popen('hostname').read()[:-1]

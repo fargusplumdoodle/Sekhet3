@@ -6,6 +6,7 @@ import socket
 import pdb
 import json
 import threading
+import Printer
 
 
 class Client(threading.Thread):
@@ -26,13 +27,41 @@ class Client(threading.Thread):
         # TODO: use config file for this
         self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
 
-        self.logs = self.getLogs(self.log_queries)
+        #self.logs =
+        self.sysInfo = {
+            'hostname': GetLog.GetHostname(),
+            'battery': GetLog.GetBattery(),
+            'temp': GetLog.GetTemp(),
+            'totalblocks': 0
+        }
+        self.ufw = {}
         self.analyzeLogs()
-        self.vp.print('Logs: %s' % len(self.logs))
 
     def analyzeLogs(self):
-        for log in self.logs:
-            print(log)
+        '''
+        This function just sorts all of the information gathered about the ufw blocks
+        :return:
+        '''
+        logs = self.getLogs(self.log_queries)
+
+        # TODO: shrink IPV6 addresses
+
+        for log in logs:
+            # creating entry if it does not exist
+            if log['src'] not in self.ufw:
+                self.ufw[log['src']] = {
+                    'freq': 0,
+                    'times': []
+                }
+
+            # recording information about what may be some jerk trying to get into
+            # my laptop but most likely is just some program thats bugging out
+            self.ufw[log['src']]['freq'] += 1
+            self.ufw[log['src']]['times'].append(log['date'])
+
+            self.sysInfo['totalblocks'] += 1
+
+
 
     def getLogs(self, log_queries):
         '''
@@ -42,10 +71,6 @@ class Client(threading.Thread):
         logs = []
         for query in log_queries:
             logs += GetLog.GetLog(query)
-
-        # For temperature
-        logs.append(GetLog.GetTemp())
-
         return logs
 
     def run(self):
@@ -59,8 +84,13 @@ class Client(threading.Thread):
 
             # #### BEGIN PROTOCOL #####1
 
-            logs = json.dumps(self.logs)
-            self.c.send(logs.encode('utf-8'))
+            payload = {
+                'ufw': self.ufw,
+                'sys': self.sysInfo
+            }
+            Printer.print_json(payload)
+            payload = json.dumps(payload)
+            self.c.send(payload.encode('utf-8'))
 
             # #### END PROTOCOL #####1##
 

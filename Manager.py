@@ -27,7 +27,7 @@ class Manager(object):
         self.vp.print('Starting Server')
         self.s.start()
 
-        self.logs = []
+        self.logs = {}
 
         self.target_output_file = 'data.json'
         self.num_clients = 0
@@ -60,7 +60,7 @@ class Manager(object):
 
                 # Collecting info from server after it has collected it from the client(s)
                 if client.waiting:
-                    self.logs += client.logs
+                    self.logs = client.logs
                     client.done = True
                     self.vp.print('Got logs, Number of logs: %s' % len(self.logs))
                     kick.append(client)
@@ -69,7 +69,7 @@ class Manager(object):
                 self.s.active_clients.remove(dead_client)
 
             self.process_logs()
-            print('All Logs: ', len(self.logs))
+            #print('All Logs: ', len(self.logs))
 
             # ## END CLIENT HANDLING ####
 
@@ -77,46 +77,12 @@ class Manager(object):
         '''Here we need to remove duplicates'''
         if len(self.logs) != 0:
 
-            newData = {}
-            for log in self.logs:
-                # Making category if not exist
-                if log['type'] not in newData:
-                    newData[log['type']] = []
-
-                newData[log['type']].append(log)
-
-
             # TODO: Make so program also can accept old information
-            #
-            # THIS IS FOR INCLUDING OLD DATA IN OUTPUT, FOR NOW WE ARE JUST GOING TO SKIP IT AND ONLY INCLUDE THE
-            # NEWEST DATA PROVIDED BY THE MOST RECENT INFORMATION # # # getting old information # oldData = '' # with open(self.target_output_file) as fl: #     oldData += fl.read() #
-            # # only run when old data is avaliable
-            # if len(oldData) != 0:
-            #     oldData = json.loads(oldData)
-            #     for type in newData:
-            #         pdb.set_trace()
-            #         # log exists only in newData
-            #
-            #         # log exists only in oldData
-            #
-            #         # Type exists in both, adding everything to new data that isnt already there
-            #         for log in oldData[type]:
-            #             if log not in newData[type]:
-            #                 newData[type].append(log)
-            #
-            #
-            #         x = set(newData[type])
-            #         y = set(oldData[type])
-            #
-            #         all = x - y
 
             # Writing to file
             output = open(self.target_output_file, 'w')
 
-            # Converting json to file-writable string
-            newData = json.dumps({'logs': newData})
-
-            len_data = len(newData)
+            len_data = len(self.logs)
             block_size = 1024
 
             iterate = len_data / block_size
@@ -129,7 +95,7 @@ class Manager(object):
                     start = written * block_size
                     end = start + block_size
                     written += 1
-                    output.write(newData[start:end])
+                    output.write(self.logs[start:end])
             except OSError:
                 self.vp.print('Error unable to write to file')
                 success = False

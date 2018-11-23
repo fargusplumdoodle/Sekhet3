@@ -1,7 +1,6 @@
 import time
 from collections import deque
 import json
-import NetworkingTools as nt
 import socket
 import threading
 from Printer import VerbosityPrinter as vp
@@ -60,11 +59,11 @@ class ClientHandler(threading.Thread):
 
         # #### BEGIN PROTOCOL #####1
 
-        logs = self.get_data(self.client_soc).decode('utf-8')
+        self.logs = self.get_data(self.client_soc).decode('utf-8')
 
         # #### END PROTOCOL #####1##
 
-        self.logs = json.loads(logs)
+        #self.logs = json.loads(logs)
 
         # PROTOCOL COMPLETE, data has been recieved.
         # Going dormant until our data has been collected by the manager
