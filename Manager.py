@@ -60,7 +60,11 @@ class Manager(object):
 
                 # Collecting info from server after it has collected it from the client(s)
                 if client.waiting:
-                    self.logs = client.logs
+                    try:
+                        self.logs = json.loads(client.logs)
+                    except Exception as e:
+                        self.vp.print('Invalid JSON: %s' % str(e))
+
                     client.done = True
                     self.vp.print('Got logs, Number of logs: %s' % len(self.logs))
                     kick.append(client)
@@ -78,6 +82,7 @@ class Manager(object):
         if len(self.logs) != 0:
 
             # TODO: Make so program also can accept old information
+            self.logs = json.dumps(self.assimilate_new_data())
 
             # Writing to file
             output = open(self.target_output_file, 'w')
@@ -108,10 +113,28 @@ class Manager(object):
 
             self.logs = []
 
+    def assimilate_new_data(self):
+        # TODO: check if file exists and has valid json before running
+        try:
+            old = json.loads(open(self.target_output_file, 'r').read())
+        except json.decoder.JSONDecodeError:
+            self.vp.print('Old JSON data invalid, overwriting with new data')
+            return self.logs
 
+        # adding new blocks to old data
+        for ip in self.logs['ufw']:
+            if ip in old['ufw']:
+                for ti in self.logs['ufw'][ip]['times']:
+                    if ti not in old['ufw'][ip]['times']:
+                        old['ufw'][ip]['times'].append(ti)
+                        old['ufw'][ip]['freq'] += 1
+            else:
+                old['ufw'][ip] = self.logs['ufw'][ip]
 
+        # we only care about current sys info
+        old['sys'] = self.logs['sys']
 
-
+        return old
 
 
 
