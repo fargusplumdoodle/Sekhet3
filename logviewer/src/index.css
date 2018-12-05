@@ -1,9 +1,15 @@
 .log {
-	height:20px;
-	width:50%;
 	border:1px solid #ccc;
 	#overflow:auto;
     overflow-y: scroll;
+    display: inline-block;
+    width: 100%;
+    height: 200px;
+    margin:auto;
+    margin-right: 10px;
+}
+.showinfo {
+    width: 100%;
 }
 body {
   margin: 0;

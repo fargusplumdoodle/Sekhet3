@@ -114,7 +114,6 @@ class Manager(object):
             self.logs = []
 
     def assimilate_new_data(self):
-        # TODO: check if file exists and has valid json before running
         try:
             old = json.loads(open(self.target_output_file, 'r').read())
         except json.decoder.JSONDecodeError:

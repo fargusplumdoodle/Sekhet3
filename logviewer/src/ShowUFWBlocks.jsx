@@ -74,7 +74,8 @@ class ShowInfo extends React.PureComponent {
                 <Collapse isOpened={this.state.isOpened} hasNestedCollapse={true}>
                     <h1>{this.props.display}</h1>
                     <h4>Frequency: {this.props.info.freq}</h4>
-                    <table class='log'>
+                    <div class='log'>
+                    <table >
                         <th>Time</th>
                         <th>Port</th>
                         {this.props.info.times.map(time =>
@@ -84,8 +85,6 @@ class ShowInfo extends React.PureComponent {
                             </tr>
                         )}
                     </table>
-                    <div class="traceroute">
-                        <p>{this.props.info.traceroute}</p>
                     </div>
                 </Collapse>
                 <br/>

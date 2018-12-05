@@ -11,7 +11,7 @@ class Manager(object):
         self.name = 'Manager'
         self.vp = vp(self.verbosity, name=self.name)
 
-        self.c = Client.Client()
+        self.c = Client.Client(server='10.0.0.99')
         self.c.start()
 
 if __name__ == '__main__':

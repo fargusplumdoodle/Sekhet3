@@ -11,7 +11,7 @@ import Printer
 
 class Client(threading.Thread):
 
-    def __init__(self, port=9899, name=0, verbose=4):
+    def __init__(self, port=9899, server='localhost' ,name=0, verbose=4):
 
         super(Client, self).__init__()
 
@@ -21,9 +21,10 @@ class Client(threading.Thread):
 
         self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.pl = 1024
-
+        self.server = server
         self.port = port
 
+        print('connecting to %s:%s' % (self.server, self.port))
         # TODO: use config file for this
         self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
 
@@ -62,10 +63,10 @@ class Client(threading.Thread):
 
             self.sysInfo['totalblocks'] += 1
 
-        for src in self.ufw:
-            self.ufw[src]['traceroute'] = GetLog.traceroute(src)
-
-
+            try:
+                self.ufw[log['src']]['hostname'] = socket.gethostbyaddr(log['src'])
+            except:
+                self.ufw[log['src']]['hostname'] = 'No reverse lookup address specified'
 
     def getLogs(self, log_queries):
         '''
@@ -79,7 +80,17 @@ class Client(threading.Thread):
 
     def run(self):
         try:
-            self.c.connect( ('localhost', self.port) )
+            while True:
+                try:
+                    if self.port > 9949:
+                        self.vp.print('Failed to connect to server')
+                        exit(-1)
+
+                    self.c.connect( (self.server, self.port) )
+                    break
+                except ConnectionError as e:
+                    self.vp.print('Initialization failed, attempting next port: %s' % self.port)
+                    self.port += 1
 
             data = self.c.recv(self.pl)
             if data != b'READY':

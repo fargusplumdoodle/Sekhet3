@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import ShowTemp from './ShowTemp'
+//import ShowTemp from './ShowTemp'
 import ShowUFWBlocks from './ShowUFWBlocks'
-import ShowLogs from "./ShowLogs";
+//import ShowLogs from "./ShowLogs";
 
 const ShowSys = (props) => {
     return (
