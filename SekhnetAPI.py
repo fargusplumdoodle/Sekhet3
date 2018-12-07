@@ -25,4 +25,4 @@ class SekhnetAPI(Resource):
         return "delete not configured", 500
 
 api.add_resource(SekhnetAPI, "/<string:name>")
-app.run(debug=True)
+app.run(host='0.0.0.0', port=3004, debug=True)
