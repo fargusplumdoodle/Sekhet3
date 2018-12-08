@@ -1,11 +1,12 @@
 #!/usr/bin/python3.6
 
-import datetime
+import Printer as p
+import fo
 import os
 import re
 
 
-def GetLog(search, lines=1000):
+def GetData(search, lines=1000):
     #
     logs = os.popen('sudo journalctl -n --lines=%s' % lines).read()
 
@@ -44,7 +45,7 @@ def GetLog(search, lines=1000):
         except AttributeError:
             port = 'Failed to find port'
 
-        #traceroute = 'example traceroute output'# os.popen('traceroute %s' % src).read()
+        # traceroute = 'example traceroute output'# os.popen('traceroute %s' % src).read()
 
         data.append({
             'type': search_term,
@@ -57,6 +58,7 @@ def GetLog(search, lines=1000):
 def traceroute(src):
     print('Running traceroute for %s' % src)
     return os.popen('traceroute %s -m 5' % src).read()
+
 def GetTemp():
     #
     logs = os.popen('sensors -u | grep \'temp[0-9]_input\'').read()
@@ -78,3 +80,17 @@ def GetBattery():
 
 def GetHostname():
     return os.popen('hostname').read()[:-1]
+
+def AnalyzeDirectory(dir, includeHidden=False):
+
+    all_files = fo.recurse_get_files(dir, includeHidden=includeHidden)
+
+    # Inefficient method of removing unwanted directories, if runs to
+    # slow or will be ran often,
+    # add ignore funtionality when searching for files
+
+    all_files = fo.get_file_info(all_files)
+    p.print_json(all_files)
+
+if __name__ == '__main__':
+    AnalyzeDirectory('/home/fargus/Projects/ThreadingTesting')

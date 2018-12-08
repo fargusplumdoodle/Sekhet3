@@ -75,7 +75,7 @@ class Client(threading.Thread):
         '''
         logs = []
         for query in log_queries:
-            logs += GetLog.GetLog(query)
+            logs += GetLog.GetData(query)
         return logs
 
     def run(self):
