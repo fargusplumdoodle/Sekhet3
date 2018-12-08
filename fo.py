@@ -32,7 +32,7 @@ def get_file_info(file_list, relativePath=None, compute_md5=True):
         The file names and the values are based on file attributes. This is more efficient
         than searching the list every time.
 
-        :returns
+        :returnsallFilesInfo[]
 
         NOTE: This works with directories but will not be able to compute md5 sum"""
     return_dic = {}

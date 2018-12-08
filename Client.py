@@ -25,10 +25,8 @@ class Client(threading.Thread):
         self.port = port
 
         print('connecting to %s:%s' % (self.server, self.port))
-        # TODO: use config file for this
         self.log_queries = ['UFW BLOCK', 'UFW ALLOW']
 
-        #self.logs =
         self.sysInfo = {
             'hostname': GetLog.GetHostname(),
             'battery': GetLog.GetBattery(),
