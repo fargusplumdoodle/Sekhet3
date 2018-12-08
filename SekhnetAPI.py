@@ -15,9 +15,9 @@ data = json.loads(data.read())
 class SekhnetAPI(Resource):
     def get(self, name):
         if name in data:
-            return data[name], 200
+            return data[name], 200,  {'Access-Control-Allow-Origin': '*'}
         else:
-            return "Resource not found", 404,  {'Access-Control-Allow-Origin': '*'}
+            return "Resource not found", 404
 
     def post(self, name):
         return "Post not configured", 500
