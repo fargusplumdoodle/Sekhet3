@@ -64,12 +64,6 @@ class SpoolPrinter(object):
         except IOError as e:
             print('Printerls:', str(e))
 
-    def from_now_on_computer_generated(self):
-        self.println('''###################################################
-# FROM HERE FORTH, THE DATA IS COMPUTER GENERATED #
-# Sekhnet SpoolPrinter ''' + print_now() + ''' #
-###################################################''')
-
 class VerbosityPrinter(object):
     '''
 
@@ -85,7 +79,7 @@ class VerbosityPrinter(object):
 
     '''
 
-    def __init__(self, v, name='Spooky'):
+    def __init__(self, v=4, name='Spooky'):
         self.verbose = v
         self.name = name
         self.length = 40
@@ -131,9 +125,6 @@ class VerbosityPrinter(object):
     def printls(self, output_ls):
         """Prints a list of outputs to both stdout and a file"""
 
-        # Verifying input
-        s.check_list(output_ls)
-
         # Writing to stdout
         for x in output_ls:
             print(x)
@@ -152,8 +143,8 @@ class VerbosityPrinter(object):
         except IOError as e:
             print('Printerls:', str(e))
 
-    def from_now_on_computer_generated(self):
-        self.println('''###################################################
+def from_now_on_computer_generated(self):
+    self.println('''###################################################
 # FROM HERE FORTH, THE DATA IS COMPUTER GENERATED #
 # Sekhnet SpoolPrinter ''' + print_now() + ''' #
 ###################################################''')

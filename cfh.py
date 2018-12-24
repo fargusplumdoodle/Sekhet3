@@ -3,6 +3,8 @@ import fo
 ##import ekhnet as s
 from Printer import SpoolPrinter
 import Printer as p
+
+
 class cfh (object):
     def __init__(self, target):
         self.target = target
@@ -89,6 +91,7 @@ class cfh (object):
 
         value_dic.pop('end')
         return value_dic
+
 
 if __name__ == '__main__':
     test = cfh('dir_locations.conf')
