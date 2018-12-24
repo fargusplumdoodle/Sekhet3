@@ -7,12 +7,68 @@ import time
 class SpoolPrinter(object):
     """For outputing to both stdout and a file"""
     def __init__(self, output_file, overwrite=False):
-        import sekhnet as s
-        s.check_str(output_file)
+#        import sekhnet as s
+#        s.check_str(output_file)
         self.output_file = output_file
 
         if overwrite:
             self.overwrite_file()
+
+    def overwrite_file(self):
+        """Makes an empty file where the target output file is"""
+        of = open(self.output_file, "w")
+        of.write('')
+        of.close()
+
+    def println(self, output_line):
+        """Prints output to both stdout and a file"""
+        output_line = str(output_line)
+
+        # Printing output to stdout
+        print(output_line)
+
+        try:
+            # Opening file
+            of = open(self.output_file, "a")
+
+            # Writing output
+            of.write(str(output_line))
+            of.write('\n')
+
+            # Closing file
+            of.close()
+        except IOError as e:
+            print('Printerln:', str(e))
+
+    def printls(self, output_ls):
+        """Prints a list of outputs to both stdout and a file"""
+
+        # Verifying input
+        s.check_list(output_ls)
+
+        # Writing to stdout
+        for x in output_ls:
+            print(x)
+        print
+
+        try:
+            # Opening file
+            of = open(self.output_file, "a")
+
+            # Writing output to file
+            of.writelines(output_ls)
+            of.write('\n')
+
+            # Closing file
+            of.close()
+        except IOError as e:
+            print('Printerls:', str(e))
+
+    def from_now_on_computer_generated(self):
+        self.println('''###################################################
+# FROM HERE FORTH, THE DATA IS COMPUTER GENERATED #
+# Sekhnet SpoolPrinter ''' + print_now() + ''' #
+###################################################''')
 
 class VerbosityPrinter(object):
     '''
@@ -45,8 +101,6 @@ class VerbosityPrinter(object):
                 print("%s   %s " % (msg, time.time()))
             if v == 4 and self.verbose >= v:
                 print("%s: %s    %s" % (self.name, msg, time.time()))
-
-
 
     def overwrite_file(self):
         """Makes an empty file where the target output file is"""
@@ -115,12 +169,12 @@ def print_footer(str):
     # getting the length that we need to just with
     # then dividing it by two
     x = 47 - 2 - len(str)
-    x = x / 2
+    x = int(x / 2)
     # Checking to see if this number is even, if it isnt we subtract one from it later to make up the space difference
     hashes = '#' * x
 
     output = hashes + ' ' + str + ' ' + hashes
-    print
+
     return output
 
 def print_json(json):
@@ -153,7 +207,7 @@ def print_header(str):
     returnStr = returnStr + '\n'
     returnStr = returnStr + hashes
     returnStr = returnStr + '\n'
-    returnStr = returnStr + '#' + str.center(len(hashes))
+    returnStr = returnStr + '#' + str.center(len(hashes) - 2 ) + '#'
     returnStr = returnStr + '\n'
     returnStr = returnStr + hashes
     returnStr = returnStr + '\n'
