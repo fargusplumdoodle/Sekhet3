@@ -1,7 +1,6 @@
 # !/usr/bin/python
 
-#import sekhnet as s
-import datetime
+from termcolor import colored
 import time
 
 class SpoolPrinter(object):
@@ -64,6 +63,7 @@ class SpoolPrinter(object):
         except IOError as e:
             print('Printerls:', str(e))
 
+
 class VerbosityPrinter(object):
     '''
 
@@ -83,6 +83,18 @@ class VerbosityPrinter(object):
         self.verbose = v
         self.name = name
         self.length = 40
+
+    def print_warning(self, msg):
+        text = colored('Warning: ' + msg, 'yellow')
+        self.print(text, v=2)
+
+    def print_error(self, msg):
+        text = colored('Error: ' + msg, 'red')
+        self.print(text, v=2)
+
+    def print_fatal_error(self, msg):
+        text = colored('Fatal Error: ' + msg, 'red', attrs=['reverse', 'blink'])
+        self.print(text, v=2)
 
     def print(self, msg, v=4, ):
         if not self.verbose == 0 and not v > self.verbose :
@@ -205,3 +217,16 @@ def print_header(str):
     return returnStr
 
 
+def print_warning(msg):
+    text = colored('Warning: ' + msg, 'yellow')
+    print(text)
+
+
+def print_error(msg):
+    text = colored('Error: ' + msg, 'red')
+    print(text)
+
+
+def print_fatal_error(msg):
+    text = colored('Fatal Error: ' + msg, 'red', attrs=['reverse', 'blink'])
+    print(text)

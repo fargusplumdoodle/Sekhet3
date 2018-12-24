@@ -71,7 +71,6 @@ class cfh (object):
             if conf_ls[x][0] == '#':
                 continue
 
-
             if conf_ls[x][0] == '[':
                 # Breaking when we reach the end
                 if conf_ls[x] == '[end]':
@@ -85,7 +84,7 @@ class cfh (object):
             # This will only trigger if we are currently recording a section
             if current_var is not None:
                 line = conf_ls[x][:-1]
-                if line == ' ':
+                if line == ' ' or line == '':
                     continue
                 value_dic[current_var].append(line)
 
