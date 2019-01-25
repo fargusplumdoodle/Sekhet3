@@ -4,6 +4,7 @@ import cfh
 import Printer as p
 import fo
 import os
+from subprocess import Popen, PIPE
 
 if __name__ == '__main__':
 
@@ -17,14 +18,12 @@ if __name__ == '__main__':
     # the list of directories found in both the root of the google drive and in the users home dir
     dirs = []
 
-
-    # ## END VARIABLES
-
-    # ## LOG FILE GOBLDYGOOGK
+    # log file shananagins
     log_file = '/home/fargus/.backup.log'
     sp = p.SpoolPrinter(log_file)
+    sp.print_log('# STARTING %s at %s #' % (title,  p.print_now() ))
+    # ## END VARIABLES
 
-    # ## END LOG FILE NONSENSE
 
     # ## CONFIG FILE CONFIGURATION
     try:
@@ -59,21 +58,71 @@ if __name__ == '__main__':
         exit(-1)
     # ## END CONFIG FILE CONFIGURATION
 
-    # ## UPLOADING DATA
+    # ## TRANSFERRING DATA
     # For each directory
     for dir in dirs:
         dir_name = dir
         # Prepending home directory to active directory
         dir = (fo.directoryify(fo.directoryify(home_dir) + dir))
 
+        # upload variable
+        upload = True
+        download = True
+
         # Verifying local directory exists, if it doesnt we skip it
         if not os.path.isdir(dir):
-            sp.print_log('Error: Local path %s does not exist' % dir)
-            sp.print_log('Skipping!')
-            continue
+            sp.print_log('WARNING: Local path %s does not exist' % dir)
+            sp.print_log('Skipping Uploading!')
+            upload = False
 
-        # running rclone command
+        # verifying remote dir exists
+        verify_command = str('rclone lsd %s:/' % rclone_config).split(' ')
+        process = Popen(verify_command, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        if dir_name not in stdout.decode('utf-8.decode('utf-8')'):
+            sp.print_log('WARNING: remote path /%s does not exist' % dir_name)
+            sp.print_log('Skipping Downloading!')
+            download = False
 
+        # UPLOADING DATA!!!!!
+        if upload:
+            sp.print_log('INITIATING UPLOAD!')
+            # generating bash command as list of arguments
+            upload_command = str('rclone copy -v %s %s:%s' % (dir, rclone_config, dir_name)).split(' ')
+
+            # Go stack overflow I choose you!
+            try:
+                process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
+                stdout, stderr = process.communicate()
+            except Exception as e:
+                # if there was a python issue with running the command
+                sp.print_log('ERROR EXECUTING UPLOAD: %s ' % str(e))
+                exit(-1)
+            # logging data from rclone
+            sp.print_log('Upload stdout:')
+            sp.println(stdout.decode('utf-8'))
+            sp.print_log('Upload stderr:')
+            sp.println(stderr.decode('utf-8'))
+
+        # DOWNLOADING DATA!!!!!
+        if download:
+            sp.print_log('INITIATING DOWNLOAD!')
+            # generating bash command as list of arguments
+            upload_command = str('rclone copy -v %s:%s %s' % (rclone_config, dir_name, dir)).split(' ')
+
+            # Go stack overflow I choose you!
+            try:
+                process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
+                stdout, stderr = process.communicate()
+            except Exception as e:
+                # if there was a python issue with running the command
+                sp.print_log('ERROR EXECUTING DOWNLOAD: %s ' % str(e))
+                exit(-1)
+            # logging data from rclone
+            sp.print_log('Download stdout:')
+            sp.println(stdout.decode('utf-8'))
+            sp.print_log('Download stderr:')
+            sp.println(stderr.decode('utf-8'))
 
 
 
