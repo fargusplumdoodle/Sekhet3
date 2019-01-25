@@ -40,7 +40,7 @@ if __name__ == '__main__':
             # if there is no config file, create it and exit
             cfh.generate_conf(title, config_comments, config_sections)
             p.print_header(title)
-            print('No config file found, generating config file')
+            sp.print_log('No config file found, generating config file')
             p.print_footer()
             exit(-1)
 
@@ -54,8 +54,8 @@ if __name__ == '__main__':
         # getting directories
         dirs = config['directories']
     except Exception as e:
-        print('Error with config: %s' % str(e))
-        print('Exiting')
+        sp.print_log('Error with config: %s' % str(e))
+        sp.print_log('Exiting')
         exit(-1)
     # ## END CONFIG FILE CONFIGURATION
 
@@ -68,8 +68,8 @@ if __name__ == '__main__':
 
         # Verifying local directory exists, if it doesnt we skip it
         if not os.path.isdir(dir):
-            print('Error: Local path %s does not exist' % dir)
-            print('Skipping!')
+            sp.print_log('Error: Local path %s does not exist' % dir)
+            sp.print_log('Skipping!')
             continue
 
         # running rclone command
