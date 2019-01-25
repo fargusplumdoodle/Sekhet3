@@ -6,8 +6,6 @@ import time
 class SpoolPrinter(object):
     """For outputing to both stdout and a file"""
     def __init__(self, output_file, overwrite=False):
-#        import sekhnet as s
-#        s.check_str(output_file)
         self.output_file = output_file
 
         if overwrite:
@@ -39,11 +37,28 @@ class SpoolPrinter(object):
         except IOError as e:
             print('Printerln:', str(e))
 
+    def print_log(self, output_line):
+        """Prints output to both stdout and a file"""
+        output_line = print_now() + ': ' + str(output_line)
+
+        # Printing output to stdout
+        print(output_line)
+
+        try:
+            # Opening file
+            of = open(self.output_file, "a")
+
+            # Writing output
+            of.write(str(output_line))
+            of.write('\n')
+
+            # Closing file
+            of.close()
+        except IOError as e:
+            print('Printerln:', str(e))
+
     def printls(self, output_ls):
         """Prints a list of outputs to both stdout and a file"""
-
-        # Verifying input
-        s.check_list(output_ls)
 
         # Writing to stdout
         for x in output_ls:
@@ -230,3 +245,7 @@ def print_error(msg):
 def print_fatal_error(msg):
     text = colored('Fatal Error: ' + msg, 'red', attrs=['reverse', 'blink'])
     print(text)
+    
+def print_now():
+    import datetime
+    return str(datetime.datetime.now())
