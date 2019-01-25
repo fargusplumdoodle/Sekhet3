@@ -79,7 +79,7 @@ if __name__ == '__main__':
         verify_command = str('rclone lsd %s:/' % rclone_config).split(' ')
         process = Popen(verify_command, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
-        if dir_name not in stdout.decode('utf-8.decode('utf-8')'):
+        if dir_name not in stdout.decode('utf-8'):
             sp.print_log('WARNING: remote path /%s does not exist' % dir_name)
             sp.print_log('Skipping Downloading!')
             download = False
