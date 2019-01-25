@@ -21,7 +21,12 @@ if __name__ == '__main__':
     # log file shananagins
     log_file = '/home/fargus/.backup.log'
     sp = p.SpoolPrinter(log_file)
-    sp.print_log('# STARTING %s at %s #' % (dir_name,  p.print_now() ))
+    sp.print_log('')
+    sp.print_log('')
+    sp.print_log('')
+    sp.print_log('#############################################')
+    sp.print_log('# STARTING %s at %s #' % (title, p.print_now() ))
+    sp.print_log('#############################################')
     # ## END VARIABLES
 
 
@@ -125,6 +130,9 @@ if __name__ == '__main__':
             sp.println(stderr.decode('utf-8'))
 
 
+sp.print_log('#############################################')
+sp.print_log('# ENDING %s at %s #' % (title, p.print_now() ))
+sp.print_log('#############################################')
 
 
 
