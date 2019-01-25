@@ -168,7 +168,7 @@ def is_even(x):
     else:
         return False
 
-def print_footer(str):
+def print_footer(str='Sekhnet'):
     # getting the length that we need to just with
     # then dividing it by two
     x = 47 - 2 - len(str)
