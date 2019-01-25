@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # log file shananagins
     log_file = '/home/fargus/.backup.log'
     sp = p.SpoolPrinter(log_file)
-    sp.print_log('# STARTING %s at %s #' % (title,  p.print_now() ))
+    sp.print_log('# STARTING %s at %s #' % (dir_name,  p.print_now() ))
     # ## END VARIABLES
 
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
         # UPLOADING DATA!!!!!
         if upload:
-            sp.print_log('INITIATING UPLOAD!')
+            sp.print_log('INITIATING UPLOAD: %s!' % dir_name)
             # generating bash command as list of arguments
             upload_command = str('rclone copy -v %s %s:%s' % (dir, rclone_config, dir_name)).split(' ')
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
         # DOWNLOADING DATA!!!!!
         if download:
-            sp.print_log('INITIATING DOWNLOAD!')
+            sp.print_log('INITIATING DOWNLOAD: %s!' % dir_name)
             # generating bash command as list of arguments
             upload_command = str('rclone copy -v %s:%s %s' % (rclone_config, dir_name, dir)).split(' ')
 
