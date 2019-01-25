@@ -38,7 +38,8 @@ class SpoolPrinter(object):
             print('Printerln:', str(e))
 
     def print_log(self, output_line):
-        """Prints output to both stdout and a file"""
+        """Prints output to both stdout and a file with
+         the time in front of each line"""
         output_line = print_now() + ': ' + str(output_line)
 
         # Printing output to stdout
