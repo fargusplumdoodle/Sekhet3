@@ -93,14 +93,18 @@ if __name__ == '__main__':
         if upload:
             sp.print_log('INITIATING UPLOAD: %s!' % dir_name)
             # generating bash command as list of arguments
-            upload_command = str('rclone copy -v %s %s:%s' % (dir, rclone_config, dir_name)).split(' ')
+            upload_command = str('rclone copy %s %s:%s' % (dir, rclone_config, dir_name)).split(' ')
 
             # Go stack overflow I choose you!
             try:
                 process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
                 stdout, stderr = process.communicate()
+            except KeyboardInterrupt as e:
+                sp.print_log('ERROR: USER ABORTED UPLOAD %s' % dir_name)
+                sp.print_log('SKIPPING TO NEXT DIRECTORY')
+                continue
             except Exception as e:
-                # if there was a python issue with running the command
+                # if there was a 
                 sp.print_log('ERROR EXECUTING UPLOAD: %s ' % str(e))
                 exit(-1)
             # logging data from rclone
@@ -113,12 +117,16 @@ if __name__ == '__main__':
         if download:
             sp.print_log('INITIATING DOWNLOAD: %s!' % dir_name)
             # generating bash command as list of arguments
-            upload_command = str('rclone copy -v %s:%s %s' % (rclone_config, dir_name, dir)).split(' ')
+            upload_command = str('rclone copy %s:%s %s' % (rclone_config, dir_name, dir)).split(' ')
 
             # Go stack overflow I choose you!
             try:
                 process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
                 stdout, stderr = process.communicate()
+            except KeyboardInterrupt as e:
+                sp.print_log('ERROR: USER ABORTED DOWNLOAD %s' % dir_name)
+                sp.print_log('SKIPPING TO NEXT DIRECTORY')
+                continue
             except Exception as e:
                 # if there was a python issue with running the command
                 sp.print_log('ERROR EXECUTING DOWNLOAD: %s ' % str(e))
