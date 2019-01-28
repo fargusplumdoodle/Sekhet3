@@ -49,7 +49,7 @@ class RcloneWrapper(threading.Thread):
             config = cfh.read_conf()
 
             # getting rclone config, there should only be one element in this list, all else will be ignored
-            self.rclone_config = config['remote_host'][0]
+            self.rclone_config = config['rclone_config'][0]
             # getting home dir, there should only be one element in this list, all else will be ignored
             self.home_dir = config['home_dir'][0]
             # getting directories
@@ -86,7 +86,7 @@ class RcloneWrapper(threading.Thread):
             # verifying remote dir exists
             verify_command = str('rclone lsd %s:/' % self.rclone_config).split(' ')
             process = Popen(verify_command, stdout=PIPE, stderr=PIPE)
-            self.sp.print_log(verify_command.join(' '))
+            self.sp.print_log(' '.join(verify_command))
             stdout, stderr = process.communicate()
             if dir_name not in stdout.decode('utf-8'):
                 self.sp.print_log('WARNING: remote path /%s does not exist' % dir_name)
@@ -98,7 +98,6 @@ class RcloneWrapper(threading.Thread):
                 self.sp.print_log('INITIATING UPLOAD: %s!' % dir_name)
                 # generating bash command as list of arguments
                 upload_command = str('rclone copy -v %s %s:%s' % (dir, self.rclone_config, dir_name))
-                print(upload_command)
 
                 # Go stack overflow I choose you!
                 try:

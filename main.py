@@ -1,10 +1,6 @@
-#rclone = Backup.Rclone_Wrapper(log_file='/tmp/backup.log')
-
-#rclone.dirs = ['test']
-
-#rclone.run()
 import Backup
+rclone = Backup.RcloneWrapper()
+#rsync = Backup.RsyncWrapper()
 
-rsync = Backup.RsyncWrapper()
-
-rsync.run()
+rclone.run()
+#$rsync.run()
