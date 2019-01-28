@@ -1,18 +1,84 @@
 # !/usr/bin/python
 
-#import sekhnet as s
-import datetime
+from termcolor import colored
 import time
 
 class SpoolPrinter(object):
     """For outputing to both stdout and a file"""
     def __init__(self, output_file, overwrite=False):
-        import sekhnet as s
-        s.check_str(output_file)
         self.output_file = output_file
 
         if overwrite:
             self.overwrite_file()
+
+    def overwrite_file(self):
+        """Makes an empty file where the target output file is"""
+        of = open(self.output_file, "w")
+        of.write('')
+        of.close()
+
+    def println(self, output_line):
+        """Prints output to both stdout and a file"""
+        output_line = str(output_line)
+
+        # Printing output to stdout
+        print(output_line)
+
+        try:
+            # Opening file
+            of = open(self.output_file, "a")
+
+            # Writing output
+            of.write(str(output_line))
+            of.write('\n')
+
+            # Closing file
+            of.close()
+        except IOError as e:
+            print('Printerln:', str(e))
+
+    def print_log(self, output_line):
+        """Prints output to both stdout and a file with
+         the time in front of each line"""
+        output_line = print_now() + ': ' + str(output_line)
+
+        # Printing output to stdout
+        print(output_line)
+
+        try:
+            # Opening file
+            of = open(self.output_file, "a")
+
+            # Writing output
+            of.write(str(output_line))
+            of.write('\n')
+
+            # Closing file
+            of.close()
+        except IOError as e:
+            print('Printerln:', str(e))
+
+    def printls(self, output_ls):
+        """Prints a list of outputs to both stdout and a file"""
+
+        # Writing to stdout
+        for x in output_ls:
+            print(x)
+        print
+
+        try:
+            # Opening file
+            of = open(self.output_file, "a")
+
+            # Writing output to file
+            of.writelines(output_ls)
+            of.write('\n')
+
+            # Closing file
+            of.close()
+        except IOError as e:
+            print('Printerls:', str(e))
+
 
 class VerbosityPrinter(object):
     '''
@@ -29,10 +95,22 @@ class VerbosityPrinter(object):
 
     '''
 
-    def __init__(self, v, name='Spooky'):
+    def __init__(self, v=4, name='Spooky'):
         self.verbose = v
         self.name = name
         self.length = 40
+
+    def print_warning(self, msg):
+        text = colored('Warning: ' + msg, 'yellow')
+        self.print(text, v=2)
+
+    def print_error(self, msg):
+        text = colored('Error: ' + msg, 'red')
+        self.print(text, v=2)
+
+    def print_fatal_error(self, msg):
+        text = colored('Fatal Error: ' + msg, 'red', attrs=['reverse', 'blink'])
+        self.print(text, v=2)
 
     def print(self, msg, v=4, ):
         if not self.verbose == 0 and not v > self.verbose :
@@ -45,8 +123,6 @@ class VerbosityPrinter(object):
                 print("%s   %s " % (msg, time.time()))
             if v == 4 and self.verbose >= v:
                 print("%s: %s    %s" % (self.name, msg, time.time()))
-
-
 
     def overwrite_file(self):
         """Makes an empty file where the target output file is"""
@@ -77,9 +153,6 @@ class VerbosityPrinter(object):
     def printls(self, output_ls):
         """Prints a list of outputs to both stdout and a file"""
 
-        # Verifying input
-        s.check_list(output_ls)
-
         # Writing to stdout
         for x in output_ls:
             print(x)
@@ -98,8 +171,8 @@ class VerbosityPrinter(object):
         except IOError as e:
             print('Printerls:', str(e))
 
-    def from_now_on_computer_generated(self):
-        self.println('''###################################################
+def from_now_on_computer_generated(self):
+    self.println('''###################################################
 # FROM HERE FORTH, THE DATA IS COMPUTER GENERATED #
 # Sekhnet SpoolPrinter ''' + print_now() + ''' #
 ###################################################''')
@@ -111,16 +184,16 @@ def is_even(x):
     else:
         return False
 
-def print_footer(str):
+def print_footer(str='Sekhnet'):
     # getting the length that we need to just with
     # then dividing it by two
     x = 47 - 2 - len(str)
-    x = x / 2
+    x = int(x / 2)
     # Checking to see if this number is even, if it isnt we subtract one from it later to make up the space difference
     hashes = '#' * x
 
     output = hashes + ' ' + str + ' ' + hashes
-    print
+
     return output
 
 def print_json(json):
@@ -153,10 +226,27 @@ def print_header(str):
     returnStr = returnStr + '\n'
     returnStr = returnStr + hashes
     returnStr = returnStr + '\n'
-    returnStr = returnStr + '#' + str.center(len(hashes))
+    returnStr = returnStr + '#' + str.center(len(hashes) - 2 ) + '#'
     returnStr = returnStr + '\n'
     returnStr = returnStr + hashes
     returnStr = returnStr + '\n'
     return returnStr
 
 
+def print_warning(msg):
+    text = colored('Warning: ' + msg, 'yellow')
+    print(text)
+
+
+def print_error(msg):
+    text = colored('Error: ' + msg, 'red')
+    print(text)
+
+
+def print_fatal_error(msg):
+    text = colored('Fatal Error: ' + msg, 'red', attrs=['reverse', 'blink'])
+    print(text)
+    
+def print_now():
+    import datetime
+    return str(datetime.datetime.now())
