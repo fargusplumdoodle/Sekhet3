@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 import threading
 
 class RcloneWrapper(threading.Thread):
-    def __init__(self, log_file='/home/fargus/.backup.log', config_file='/home/fargus/.backup.conf'):
+    def __init__(self, log_file='/home/fargus/.backup_rclone.log', config_file='/home/fargus/.backup_rclone.conf'):
         # calling super constructor
         super(RcloneWrapper, self).__init__()
         #  ## VARIABLES
@@ -86,6 +86,7 @@ class RcloneWrapper(threading.Thread):
             # verifying remote dir exists
             verify_command = str('rclone lsd %s:/' % self.rclone_config).split(' ')
             process = Popen(verify_command, stdout=PIPE, stderr=PIPE)
+            self.sp.print_log(verify_command.join(' '))
             stdout, stderr = process.communicate()
             if dir_name not in stdout.decode('utf-8'):
                 self.sp.print_log('WARNING: remote path /%s does not exist' % dir_name)
@@ -96,11 +97,13 @@ class RcloneWrapper(threading.Thread):
             if upload:
                 self.sp.print_log('INITIATING UPLOAD: %s!' % dir_name)
                 # generating bash command as list of arguments
-                upload_command = str('rclone copy -v %s %s:%s' % (dir, self.rclone_config, dir_name)).split(' ')
+                upload_command = str('rclone copy -v %s %s:%s' % (dir, self.rclone_config, dir_name))
+                print(upload_command)
 
                 # Go stack overflow I choose you!
                 try:
-                    process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
+                    self.sp.print_log(upload_command)
+                    process = Popen(upload_command.split(' '), stdout=PIPE, stderr=PIPE)
                     stdout, stderr = process.communicate()
                 except Exception as e:
                     # if there was a python issue with running the command
@@ -116,11 +119,12 @@ class RcloneWrapper(threading.Thread):
             if download:
                 self.sp.print_log('INITIATING DOWNLOAD: %s!' % dir_name)
                 # generating bash command as list of arguments
-                upload_command = str('rclone copy -v %s:%s %s' % (self.rclone_config, dir_name, dir)).split(' ')
+                upload_command = str('rclone copy -v %s:%s %s' % (self.rclone_config, dir_name, dir))
 
                 # Go stack overflow I choose you!
                 try:
-                    process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
+                    self.sp.print_log(upload_command)
+                    process = Popen(upload_command.split(' '), stdout=PIPE, stderr=PIPE)
                     stdout, stderr = process.communicate()
                 except Exception as e:
                     # if there was a python issue with running the command
@@ -229,6 +233,7 @@ class RsyncWrapper(threading.Thread):
 
                 # Go stack overflow I choose you!
                 try:
+                    self.sp.print_log(' '.join(upload_command))
                     process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
                     stdout, stderr = process.communicate()
                 except Exception as e:
@@ -249,6 +254,7 @@ class RsyncWrapper(threading.Thread):
 
                 # Go stack overflow I choose you!
                 try:
+                    self.sp.print_log(' '.join(upload_command))
                     process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
                     stdout, stderr = process.communicate()
                 except Exception as e:
