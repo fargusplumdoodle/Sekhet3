@@ -1,148 +1,274 @@
 #!/usr/bin/python3
 
-import cfh
-import os
-import fo
 import Printer as p
+import fo
+import os
+from subprocess import Popen, PIPE
+import threading
 
-############
-# Settings #
-############
+class RcloneWrapper(threading.Thread):
+    def __init__(self, log_file='/home/fargus/.backup_rclone.log', config_file='/home/fargus/.backup_rclone.conf'):
+        # calling super constructor
+        super(RcloneWrapper, self).__init__()
+        #  ## VARIABLES
+        # this gets used sometimes
+        self.title = 'Google Drive Backup'
+        # value that we will plug into rclone to access google drive
+        self.rclone_config = None
+        # users home directory, ( this can be anything, but all dirs will be assumed to be in home dir)
+        self.home_dir = None
+        # the list of directories found in both the root of the google drive and in the users home dir
+        self.dirs = []
 
-errors = []
-warnings = []
+        # log file shananagins
+        self.log_file = log_file
+        self.sp = p.SpoolPrinter(self.log_file)
+        # ## END VARIABLES
 
-dir = '/home/fargus/.SekhnetBackup'
-conf_fl = fo.directoryify(dir) + 'backup.conf'
-# comments are examples
-conf_info = [
-    'rclone_conf',
-    # isaac
-    'targets',
-    # /home/fargus/Documents
-    # /home/fargus/Pictures
-    # /home/fargus/Downloads
-    'encrypt'
-    # /home/fargus/Safe
-]
-conf_comments = '''
-    #Example Settings:
-    #'rclone_conf',
-    # isaac
-    #'targets',
-    # /home/fargus/Documents
-    # /home/fargus/Pictures
-    # /home/fargus/Downloads
-    #'encrypt'
-    # /home/fargus/Safe
-'''
 
-targets = []
-rclone_conf = ''
-encrypt_dirs = []
+        # ## CONFIG FILE CONFIGURATION
+        try:
+            config_file = config_file
+            config_comments = 'I am writing this because every file in my home directory was deleted. I am now sad. Below write the directories you want to magically reappear if they are deleted They MUST be in the root directory of the Google Drive account that you have specified Also include full directories you fool This utility assumes you already have a valid rclone configuration. If you are unsure if you have this  please inform yourself. Because I am tired and sad and at school and its late and I want to finish this and go home. Dont give up hope and wash the dishes moron. ALSO THIS ONLY WORKS WITH DIRECTORIES IN YOUR HOME DIRECTORY'
+            config_sections = ['remote_host', 'home_dir', 'directories']
 
-###########
-# Methods #
-###########
+            # creating config file object
+            import cfh
+            cfh = cfh.cfh(config_file)
 
-def print_errors(errors):
-    for x in errors:
-        p.print_error(x)
+            # check for config file
+            if not os.path.isfile(config_file):
+                # if there is no config file, create it and exit
+                cfh.generate_conf(self.title, config_comments, config_sections)
+                p.print_header(self.title)
+                self.sp.print_log('No config file found, generating config file')
+                p.print_footer()
+                exit(-1)
 
-def print_warnings(warnings):
-    for x in warnings:
-        p.print_warning(x)
-        
-###################
-# Handling config #
-###################
+            # loading data from config
+            config = cfh.read_conf()
 
-# Making directory if it doesnt exist
-if not os.path.exists(dir):
-    fo.mkdir(dir)
+            # getting rclone config, there should only be one element in this list, all else will be ignored
+            self.rclone_config = config['remote_host'][0]
+            # getting home dir, there should only be one element in this list, all else will be ignored
+            self.home_dir = config['home_dir'][0]
+            # getting directories
+            self.dirs = config['directories']
+        except Exception as e:
+            self.sp.print_log('Error with config: %s' % str(e))
+            self.sp.print_log('Exiting')
+            exit(-1)
+        # ## END CONFIG FILE CONFIGURATION
 
-# Creating configuration handler object
-conf = cfh.cfh(conf_fl)
+    def run(self):
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('# STARTING %s at %s #' % (self.title, p.print_now()))
+        # ## TRANSFERRING DATA
+        # For each directory
+        for dir in self.dirs:
+            dir_name = dir
+            self.sp.print_log('# STARTING %s at %s #' % (dir_name, p.print_now()))
+            # Prepending home directory to active directory
+            dir = (fo.directoryify(fo.directoryify(self.home_dir) + dir))
 
-# checking config file
-if not os.path.exists(conf_fl):
-    conf.generate_conf('Sekhnet gDrive Backup', conf_comments, conf_info)
-    p.print_warning('No config File found, generated one')
-    p.print_warning('Exiting')
-    exit()
+            # upload variable
+            upload = True
+            download = True
 
-# We have now verified that the config file exists along
-# with the bin directory which will hold all of our programs
-# files
+            # Verifying local directory exists, if it doesnt we skip it
+            if not os.path.isdir(dir):
+                self.sp.print_log('WARNING: Local path %s does not exist' % dir)
+                self.sp.print_log('Skipping Uploading!')
+                upload = False
 
-# Loading data
-conf_dic = conf.read_conf()
+            # verifying remote dir exists
+            verify_command = str('rclone lsd %s:/' % self.rclone_config).split(' ')
+            process = Popen(verify_command, stdout=PIPE, stderr=PIPE)
+            self.sp.print_log(verify_command.join(' '))
+            stdout, stderr = process.communicate()
+            if dir_name not in stdout.decode('utf-8'):
+                self.sp.print_log('WARNING: remote path /%s does not exist' % dir_name)
+                self.sp.print_log('Skipping Downloading!')
+                download = False
 
-# We are targeting only the first index here, because there should only be one value
-try:
-    if len(conf_dic['rclone_conf']) > 1:
-        warnings.append('Only one rclone conf should be specified, found more than one')
-        warnings.append('Ignoring confs after the first one...')
-    rclone_conf = conf_dic['rclone_conf'][0]
+            # UPLOADING DATA!!!!!
+            if upload:
+                self.sp.print_log('INITIATING UPLOAD: %s!' % dir_name)
+                # generating bash command as list of arguments
+                upload_command = str('rclone copy -v %s %s:%s' % (dir, self.rclone_config, dir_name))
+                print(upload_command)
 
-    targets = conf_dic['targets']
-    encrypt_dirs = conf_dic['encrypt']
-except IndexError:
-    p.print_fatal_error('Invalid Config file, check \'%s\'' % conf_fl)
-    exit(1)
+                # Go stack overflow I choose you!
+                try:
+                    self.sp.print_log(upload_command)
+                    process = Popen(upload_command.split(' '), stdout=PIPE, stderr=PIPE)
+                    stdout, stderr = process.communicate()
+                except Exception as e:
+                    # if there was a python issue with running the command
+                    self.sp.print_log('ERROR EXECUTING UPLOAD: %s ' % str(e))
+                    exit(-1)
+                # logging data from rclone
+                self.sp.print_log('Upload stdout:')
+                self.sp.println(stdout.decode('utf-8'))
+                self.sp.print_log('Upload stderr:')
+                self.sp.println(stderr.decode('utf-8'))
 
-###############################
-# Verifying all targets exist #
-###############################
+            # DOWNLOADING DATA!!!!!
+            if download:
+                self.sp.print_log('INITIATING DOWNLOAD: %s!' % dir_name)
+                # generating bash command as list of arguments
+                upload_command = str('rclone copy -v %s:%s %s' % (self.rclone_config, dir_name, dir))
 
-kick_targets = []
-for x in targets:
-    if not os.path.exists(x):
-        error = 'Path \'%s\' Does not exist ' % x
-        errors.append(error)
-        kick_targets.append(x)
+                # Go stack overflow I choose you!
+                try:
+                    self.sp.print_log(upload_command)
+                    process = Popen(upload_command.split(' '), stdout=PIPE, stderr=PIPE)
+                    stdout, stderr = process.communicate()
+                except Exception as e:
+                    # if there was a python issue with running the command
+                    self.sp.print_log('ERROR EXECUTING DOWNLOAD: %s ' % str(e))
+                    exit(-1)
+                # logging data from rclone
+                self.sp.print_log('Download stdout:')
+                self.sp.println(stdout.decode('utf-8'))
+                self.sp.print_log('Download stderr:')
+                self.sp.println(stderr.decode('utf-8'))
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('')
+        self.sp.print_log('')
+        self.sp.print_log('')
 
-kick_enc = []
-for x in encrypt_dirs:
-    if not os.path.exists(x):
-        error = 'Path \'%s\' Does not exist ' % x
-        errors.append(error)
-        kick_enc.append(x)
 
-# Removing non existing directories to prevent future errors
-for x in kick_targets:
-    targets.remove(x)
+class RsyncWrapper(threading.Thread):
+    def __init__(self, log_file='/home/fargus/.backup_rsync.log', config_file='/home/fargus/.backup_rsync.conf'):
+        # calling super constructor
+        super(RsyncWrapper, self).__init__()
+        #  ## VARIABLES
+        # this gets used sometimes
+        self.title = 'Rsync Backup'
+        # users home directory, ( this can be anything, but all dirs will be assumed to be in home dir)
+        self.home_dir = None
+        #  remote directory that all of the subfolders are stored in example: /mnt/user
+        self.remote_home = None
+        # the list of directories found in both the root of the google drive and in the users home dir
+        self.dirs = []
 
-for x in kick_enc:
-    encrypt_dirs.remove(x)
+        # log file shananagins
+        self.log_file = log_file
+        self.sp = p.SpoolPrinter(self.log_file)
+        # ## END VARIABLES
 
-# Verifying that there are still directories left to work with
-if len(encrypt_dirs) == 0:
-    warnings.append('No directories specified to be encrypted')
 
-if len(targets) == 0:
-    print_errors(errors)
-    print_warnings(warnings)
-    p.print_fatal_error('No target directories to sync! Exiting...')
-    exit(2)
+        # ## CONFIG FILE CONFIGURATION
+        try:
+            config_file = config_file
+            config_comments = 'I am writing this because every file in my home directory was deleted. I am now sad. Below write the directories you want to magically reappear if they are deleted They MUST be in the root directory of the Google Drive account that you have specified Also include full directories you fool This utility assumes you already have a valid rclone configuration. If you are unsure if you have this  please inform yourself. Because I am tired and sad and at school and its late and I want to finish this and go home. Dont give up hope and wash the dishes moron. ALSO THIS ONLY WORKS WITH DIRECTORIES IN YOUR HOME DIRECTORY'
+            config_sections = ['remote_host', 'home_dir', 'directories', 'remote_home']
 
-#  Compressing:
-#  tar -zcvf compressed.tar.gz test/ > /dev/null
-#
-#  Encrypting:
-#  openssl enc -aes-256-cbc -salt -k 1234asdf -in encryptMe.txt -out secure.d
-#
-#  Decompressing:
-#  tar xf decrypted.tar.gz
-#
-#  Decrypting
-#  openssl enc -aes-256-cbc -d -k 1234asdf -in secure.d -out plaintext.txt
-#
+            # creating config file object
+            import cfh
+            cfh = cfh.cfh(config_file)
 
-# Printing Errors and warnings
-print_warnings(warnings)
-print_errors(errors)
+            # check for config file
+            if not os.path.isfile(config_file):
+                # if there is no config file, create it and exit
+                p.print_header(self.title)
+                self.sp.print_log('No config file found, generating config file')
+                cfh.generate_conf(self.title, config_comments, config_sections)
+                p.print_footer()
+                exit(-1)
 
-##
-# END #
-     ##
+            # loading data from config
+            config = cfh.read_conf()
+
+            # getting rclone config, there should only be one element in this list, all else will be ignored
+            self.remote_host = config['remote_host'][0]
+            # remote home direcotry
+            self.remote_home = config['remote_home'][0]
+            # getting home dir, there should only be one element in this list, all else will be ignored
+            self.home_dir = config['home_dir'][0]
+            # getting directories
+            self.dirs = config['directories']
+        except Exception as e:
+            self.sp.print_log('Error with config: %s' % str(e))
+            self.sp.print_log('Exiting')
+            exit(-1)
+        # ## END CONFIG FILE CONFIGURATION
+
+    def run(self):
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('# STARTING %s at %s #' % (self.title, p.print_now()))
+        # ## TRANSFERRING DATA
+        # For each directory
+        for dir in self.dirs:
+            dir_name = dir
+            self.sp.print_log('# STARTING %s at %s #' % (dir_name, p.print_now()))
+            # Prepending home directory to active directory
+            dir = (fo.directoryify(fo.directoryify(self.home_dir) + dir))
+            remote_dir = (fo.directoryify(fo.directoryify(self.remote_home) + dir_name))
+
+            # upload variable
+            upload = True
+            download = True
+
+            # Verifying local directory exists, if it doesnt we skip it
+            if not os.path.isdir(dir):
+                self.sp.print_log('WARNING: Local path %s does not exist' % dir)
+                self.sp.print_log('Skipping Uploading!')
+                upload = False
+
+            # BUG: We cannot know if the remote directory exists for us to download from
+
+            # UPLOADING DATA!!!!!
+            if upload:
+                self.sp.print_log('INITIATING UPLOAD: %s!' % dir_name)
+                # generating bash command as list of arguments
+                upload_command = str('rsync -azvh -e ssh %s %s:%s' % (dir, self.remote_host, remote_dir)).split(' ')
+
+                # Go stack overflow I choose you!
+                try:
+                    self.sp.print_log(' '.join(upload_command))
+                    process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
+                    stdout, stderr = process.communicate()
+                except Exception as e:
+                    # if there was a python issue with running the command
+                    self.sp.print_log('ERROR EXECUTING UPLOAD: %s ' % str(e))
+                    exit(-1)
+                # logging data from rclone
+                self.sp.print_log('Upload stdout:')
+                self.sp.println(stdout.decode('utf-8'))
+                self.sp.print_log('Upload stderr:')
+                self.sp.println(stderr.decode('utf-8'))
+
+            # DOWNLOADING DATA!!!!!
+            if download:
+                self.sp.print_log('INITIATING DOWNLOAD: %s!' % dir_name)
+                # generating bash command as list of arguments
+                upload_command = str('rsync -azvh -e ssh %s:%s %s' % (self.remote_host, remote_dir, dir)).split(' ')
+
+                # Go stack overflow I choose you!
+                try:
+                    self.sp.print_log(' '.join(upload_command))
+                    process = Popen(upload_command, stdout=PIPE, stderr=PIPE)
+                    stdout, stderr = process.communicate()
+                except Exception as e:
+                    # if there was a python issue with running the command
+                    self.sp.print_log('ERROR EXECUTING DOWNLOAD: %s ' % str(e))
+                    exit(-1)
+                # logging data from rclone
+                self.sp.print_log('Download stdout:')
+                self.sp.println(stdout.decode('utf-8'))
+                self.sp.print_log('Download stderr:')
+                self.sp.println(stderr.decode('utf-8'))
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('#######################################################################')
+        self.sp.print_log('')
+        self.sp.print_log('')
+        self.sp.print_log('')
