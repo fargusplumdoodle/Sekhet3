@@ -29,7 +29,8 @@ class Rclone_Wrapper(threading.Thread):
         # ## CONFIG FILE CONFIGURATION
         try:
             config_file = config_file
-            config_comments = 'I am writing this because every file in my home directory was deleted. I am now sad. Below write the directories you want to magically reappear if they are deleted They MUST be in the root directory of the Google Drive account that you have specified Also include full directories you fool This utility assumes you already have a valid rclone configuration. If you are unsure if you have this  please inform yourself. Because I am tired and sad and at school and its late and I want to finish this and go home. Dont give up hope and wash the dishes moron. ALSO THIS ONLY WORKS WITH DIRECTORIES IN YOUR HOME DIRECTORY'
+            # config_comments = 'I am writing this because every file in my home directory was deleted. I am now sad. Below write the directories you want to magically reappear if they are deleted They MUST be in the root directory of the Google Drive account that you have specified Also include full directories you fool This utility assumes you already have a valid rclone configuration. If you are unsure if you have this  please inform yourself. Because I am tired and sad and at school and its late and I want to finish this and go home. Dont give up hope and wash the dishes moron. ALSO THIS ONL'
+            config_comments = 'This program syncs each of the directories within a given directory with your google drive. \n remote_host: rclone config\nhome_dir: your shared folder\ndirectories: all of the directories in your shared folder that you want to sync\n\nFargus Plumdoodle 2019'
             config_sections = ['remote_host', 'home_dir', 'directories']
 
             # creating config file object
